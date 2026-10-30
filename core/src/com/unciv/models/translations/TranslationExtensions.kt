@@ -4,6 +4,7 @@ import com.unciv.UncivGame
 import com.unciv.models.ruleset.unique.Unique
 import com.unciv.models.stats.Stat
 import com.unciv.models.stats.Stats
+import com.unciv.ui.components.fonts.ArabicTextProcessor
 import com.unciv.ui.components.fonts.FontRulesetIcons
 import java.util.Locale
 import org.jetbrains.annotations.VisibleForTesting
@@ -75,6 +76,14 @@ fun String.tr(hideIcons: Boolean = false, hideStats: Boolean = false) =
 
 @Readonly
 fun String.tr(language: String, hideIcons: Boolean = false, hideStats: Boolean = false): String {
+    val logical = trLogical(language, hideIcons, hideStats)
+    // Arabic needs letter joining and right-to-left reordering, but only on the final display string
+    return if (language == ArabicTextProcessor.LANGUAGE) ArabicTextProcessor.process(logical) else logical
+}
+
+/** Translation in logical order - used by the recursive internals so visual reordering happens exactly once, on the outermost call */
+@Readonly
+private fun String.trLogical(language: String, hideIcons: Boolean = false, hideStats: Boolean = false): String {
     // '<' and '>' checks for quick 'no' answer.
     if (supportNestingPointy) {
         val ltIndex = findNextTopLevel(this, 0, '<')
@@ -228,7 +237,7 @@ private fun String.translatePartial(language: String, hideIcons: Boolean, firstP
     @LocalState
     val sb = StringBuilder(length + 16)
     parsePairs('{', '}', firstPos, supportNestingCurly,
-        emitInside = { start, end -> sb.append( substring(start, end).tr(language, hideIcons) ) },
+        emitInside = { start, end -> sb.append( substring(start, end).trLogical(language, hideIcons) ) },
         emitOutside = { start, end -> sb.append(this, start, end) }
     )
     return sb.toString()
@@ -290,7 +299,7 @@ private fun String.translatePlaceholders(language: String, hideIcons: Boolean, f
     if (supportNestingSquareReplacement) {
         val substitutions = HashMap<String, String>()
         for (i in termsInMessage.indices) {
-            val translated = termsInMessage[i].tr(language, hideIcons)
+            val translated = termsInMessage[i].trLogical(language, hideIcons)
             substitutions.putIfAbsent(termsInTranslationPlaceholder[i], translated)
         }
 
@@ -313,7 +322,7 @@ private fun String.translatePlaceholders(language: String, hideIcons: Boolean, f
         for (i in termsInMessage.indices) {
             languageSpecificPlaceholder = languageSpecificPlaceholder.replace(
                 "[${termsInTranslationPlaceholder[i]}]", // re-add square brackets to placeholder terms
-                termsInMessage[i].tr(hideIcons)
+                termsInMessage[i].trLogical(TranslationCache.language, hideIcons)
             )
         }
         return languageSpecificPlaceholder
@@ -358,7 +367,7 @@ private fun String.translateConditionals(language: String, hideIcons: Boolean, f
     @Suppress("purity") // mapTo into our own local state
     val translatedConditionals = conditionalContents
         .sortedBy(::sortPriority)
-        .mapTo(ArrayList(conditionalContents.size)) { it.tr(language, hideIcons) }
+        .mapTo(ArrayList(conditionalContents.size)) { it.trLogical(language, hideIcons) }
 
     // After that, add the translation of the base unique either before or after these conditionals
     val translatedBaseUnique = base.toString().trNoConditionals(language, hideIcons)
