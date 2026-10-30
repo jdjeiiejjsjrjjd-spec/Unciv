@@ -26,7 +26,7 @@ enum class LocaleCode(
     val unused: Boolean = false
 ) {
     Afrikaans("af-ZA"),
-    Arabic("ar-IQ", unused = true),
+    Arabic("ar-AE-u-nu-latn"), // forced Latin digits - Arabic text is shaped and reordered by ArabicTextProcessor
     Bangla("bn-BD"),
     Belarusian("be-BY"),
     Bosnian("bs-BA"),
