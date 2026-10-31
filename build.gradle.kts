@@ -53,6 +53,7 @@ allprojects {
             "io.ktor.http.Url", //constructor
         )
         wellKnownReadonlyFunctions = setOf(
+            "com.unciv.ui.components.fonts.ArabicTextProcessor.process",
             "com.badlogic.gdx.math.Vector2.len",
             "com.badlogic.gdx.math.Vector2.cpy",
             "com.badlogic.gdx.math.Vector2.hashCode",
