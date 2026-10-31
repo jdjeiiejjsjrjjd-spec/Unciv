@@ -138,9 +138,12 @@ object ArabicTextProcessor {
             '.', ',', ':', ';', '!', '?', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '-', '+', '%',
             '\'', '"', '\u060C', '\u061B', '\u061F', '\u00AB', '\u00BB', '*', '=', '&', '#', '@', '~', '|', '_',
             '\u2013', '\u2014', '\u2026', '\u201C', '\u201D', '\u2018', '\u2019' -> true
-            else -> !(Character.getType(c).toByte().let {
-                it == Character.MATH_SYMBOL || it == Character.OTHER_SYMBOL || it == Character.CURRENCY_SYMBOL || it == Character.MODIFIER_SYMBOL
-            })
+            else -> {
+                // Symbols (stat icons, currency, math signs not listed above) behave like left-to-right text
+                val type = Character.getType(c)
+                type != Character.MATH_SYMBOL.toInt() && type != Character.OTHER_SYMBOL.toInt() &&
+                    type != Character.CURRENCY_SYMBOL.toInt() && type != Character.MODIFIER_SYMBOL.toInt()
+            }
         }
     }
 
