@@ -114,13 +114,13 @@ object ArabicTextProcessor {
 
     @Readonly
     private fun canConnectToNext(c: Char): Boolean {
-        val f = forms[c] ?: return false
+        @LocalState val f = forms[c] ?: return false // the table is never modified after init
         return f[2] != 0 // has an initial form => dual joining
     }
 
     @Readonly
     private fun canConnectToPrev(c: Char): Boolean {
-        val f = forms[c] ?: return false
+        @LocalState val f = forms[c] ?: return false // the table is never modified after init
         return f[1] != 0
     }
 
@@ -143,7 +143,7 @@ object ArabicTextProcessor {
         var i = 0
         while (i < s.length) {
             val c = s[i]
-            val f = forms[c]
+            @LocalState val f = forms[c] // the table is never modified after init
             if (f == null) {
                 sb.append(c)
                 i++
